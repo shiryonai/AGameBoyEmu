@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="RAM\" />
+    <Folder Include="VRAM\" />
+    <Folder Include="Graphics\" />
+  </ItemGroup>
+
 </Project>
