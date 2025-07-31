@@ -84,7 +84,48 @@ namespace AGameBoyEmu.SoC
                 };
             }
         }
+        
+        public void Execute(Instruction instruction)
+        {
+            switch (instruction.Type)
+            {
+                case InstructionType.ADD:
+                    byte value = GetRegisterValue(instruction.Target);
+                    AddToA(value);
+                    break;
+                // To do: add more cases for other instructions
+            }
+        }
 
+        private byte GetRegisterValue(Register8 reg)
+        {
+            return reg switch
+            {
+                Register8.A => A,
+                Register8.B => B,
+                Register8.C => C,
+                Register8.D => D,
+                Register8.E => E,
+                Register8.H => H,
+                Register8.L => L,
+                _ => 0
+            };
+        }
 
+        private void AddToA(byte value)
+        {
+            int result = A + value;
+
+            // Set flags
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.carry = result > 0xFF;
+            flags.halfCarry = ((A & 0xF) + (value & 0xF)) > 0xF;
+
+            F = flags.ToByte(); // Update F register
+
+            A = (byte)result;
+        }
     }
 }
