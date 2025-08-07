@@ -7,8 +7,10 @@ namespace AGameBoyEmu.SoC
 
     public enum InstructionType
     {
-        ADD
-        // TODO: Add other instruction types as needed
+        ADD,
+        ADDHL,
+        ADC
+        // TODO: add more instruction types
     }
 
     public struct Instruction

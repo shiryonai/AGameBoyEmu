@@ -9,12 +9,12 @@ namespace AGameBoyEmu.SoC
     public class CPU
     {
         // CPU Registers
-        public byte A, B, C, D, E, F, H, L; 
+        public byte A, B, C, D, E, F, H, L;
         public ushort SP; // Stack Pointer
         public ushort PC; // Program Counter
 
         // Combined registers
-        
+
         public ushort BC
         {
             get => (ushort)((B << 8) | C);
@@ -84,16 +84,20 @@ namespace AGameBoyEmu.SoC
                 };
             }
         }
-        
+
         public void Execute(Instruction instruction)
         {
             switch (instruction.Type)
             {
                 case InstructionType.ADD:
                     byte value = GetRegisterValue(instruction.Target);
-                    AddToA(value);
+                    ADD(value);
                     break;
-                // To do: add more cases for other instructions
+                case InstructionType.ADDHL:
+                    ushort hlValue = GetRegisterValue(instruction.Target);
+                    ADDHL(hlValue);
+                    break;
+                    // To do: add more cases for other instructions
             }
         }
 
@@ -112,7 +116,7 @@ namespace AGameBoyEmu.SoC
             };
         }
 
-        private void AddToA(byte value)
+        private void ADD(byte value)
         {
             int result = A + value;
 
@@ -124,8 +128,23 @@ namespace AGameBoyEmu.SoC
             flags.halfCarry = ((A & 0xF) + (value & 0xF)) > 0xF;
 
             F = flags.ToByte(); // Update F register
-
             A = (byte)result;
         }
+
+        private void ADDHL(ushort value)
+        {
+            int result = HL + value;
+
+            // Start from current flags to preserve Z
+            Flags flags = Flags.FromByte(F);
+            flags.subtract = false;
+            flags.carry = result > 0xFFFF;
+            flags.halfCarry = ((HL & 0xFFF) + (value & 0xFFF)) > 0xFFF;
+
+            F = flags.ToByte();
+            HL = (ushort)result;
+        }
+        
+        
     }
 }
