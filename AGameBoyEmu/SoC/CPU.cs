@@ -90,13 +90,46 @@ namespace AGameBoyEmu.SoC
             switch (instruction.Type)
             {
                 case InstructionType.ADD:
-                    byte value = GetRegisterValue(instruction.Target);
-                    ADD(value);
+                    byte addVal = GetRegisterValue(instruction.Target);
+                    ADD(addVal);
                     break;
                 case InstructionType.ADDHL:
-                    ushort hlValue = GetRegisterValue(instruction.Target);
-                    ADDHL(hlValue);
+                    ushort addhlVal = GetRegisterValue(instruction.Target);
+                    ADDHL(addhlVal);
                     break;
+                case InstructionType.ADC:
+                    byte adcVal = GetRegisterValue(instruction.Target);
+                    ADC(adcVal);
+                    break;
+                case InstructionType.SUB:
+                    byte subVal = GetRegisterValue(instruction.Target);
+                    SUB(subVal);
+                    break;
+                case InstructionType.SBC:
+                    byte sbcVal = GetRegisterValue(instruction.Target);
+                    SBC(sbcVal);
+                    break;
+                case InstructionType.AND:
+                    byte andVal = GetRegisterValue(instruction.Target);
+                    AND(andVal);
+                    break;
+                case InstructionType.OR:
+                    byte orVal = GetRegisterValue(instruction.Target);
+                    OR(orVal);
+                    break;
+                case InstructionType.XOR:
+                    byte xorVal = GetRegisterValue(instruction.Target);
+                    XOR(xorVal);
+                    break;
+                case InstructionType.CP:
+                    byte cpVal = GetRegisterValue(instruction.Target);
+                    CP(cpVal);
+                    break;
+                case InstructionType.INC:
+                    byte incVal = GetRegisterValue(instruction.Target);
+                    INC(incVal);
+                    break;
+
                     // To do: add more cases for other instructions
             }
         }
@@ -131,6 +164,7 @@ namespace AGameBoyEmu.SoC
             A = (byte)result;
         }
 
+        // Add to HL
         private void ADDHL(ushort value)
         {
             int result = HL + value;
@@ -144,7 +178,119 @@ namespace AGameBoyEmu.SoC
             F = flags.ToByte();
             HL = (ushort)result;
         }
-        
+
+        // Add with Carry
+        private void ADC(byte value)
+        {
+            int result = A + value + (F & 0x10); // Add carry flag if set
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.carry = result > 0xFF;
+            flags.halfCarry = ((A & 0xF) + (value & 0xF) + ((F & 0x10) >> 4)) > 0xF;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+
+        private void SUB(byte value)
+        {
+            int result = A - value;
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = true;
+            flags.carry = result < 0;
+            flags.halfCarry = ((A & 0xF) - (value & 0xF)) < 0;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+
+        // Subtract with Carry
+        private void SBC(byte value)
+        {
+            int result = A - value - ((F & 0x10) >> 4);
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = true;
+            flags.carry = result < 0;
+            flags.halfCarry = ((A & 0xF) - (value & 0xF) - ((F & 0x10) >> 4)) < 0;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+
+        private void AND(byte value)
+        {
+            int result = A & value;
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.carry = false;
+            flags.halfCarry = true;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+        private void OR(byte value)
+        {
+            int result = A | value;
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.carry = false;
+            flags.halfCarry = false;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+
+        private void XOR(byte value)
+        {
+            int result = A ^ value;
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.carry = false;
+            flags.halfCarry = false;
+
+            F = flags.ToByte();
+            A = (byte)result;
+        }
+
+        // Compare
+        private void CP(byte value)
+        {
+            int result = A - value;
+
+            Flags flags = new Flags();
+            flags.zero = (byte)result == 0;
+            flags.subtract = true;
+            flags.carry = result < 0;
+            flags.halfCarry = ((A & 0xF) - (value & 0xF)) < 0;
+
+            F = flags.ToByte();
+        }
+
+        // Increment
+        private void INC(byte value)
+        {
+            int result = value + 1;
+
+            // Preserve the carry flag
+            Flags flags = Flags.FromByte(F);
+            flags.zero = (byte)result == 0;
+            flags.subtract = false;
+            flags.halfCarry = (value & 0xF) + 1 > 0xF;
+
+            F = flags.ToByte();
+        }
         
     }
 }

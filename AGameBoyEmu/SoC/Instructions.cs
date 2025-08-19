@@ -9,7 +9,14 @@ namespace AGameBoyEmu.SoC
     {
         ADD,
         ADDHL,
-        ADC
+        ADC,
+        SUB,
+        SBC,
+        AND,
+        OR,
+        XOR,
+        CP,
+        INC,
         // TODO: add more instruction types
     }
 
