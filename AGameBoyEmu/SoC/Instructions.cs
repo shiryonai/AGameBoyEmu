@@ -17,7 +17,11 @@ namespace AGameBoyEmu.SoC
         XOR,
         CP,
         INC,
-        // TODO: add more instruction types
+        DEC,
+        CCF,
+        SCF,
+        RRA,
+                // TODO: add more instruction types
     }
 
     public struct Instruction

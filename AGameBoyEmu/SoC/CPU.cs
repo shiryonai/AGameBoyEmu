@@ -129,7 +129,19 @@ namespace AGameBoyEmu.SoC
                     byte incVal = GetRegisterValue(instruction.Target);
                     INC(incVal);
                     break;
-
+                case InstructionType.DEC:
+                    byte decVal = GetRegisterValue(instruction.Target);
+                    DEC(decVal);
+                    break;
+                case InstructionType.CCF:
+                    CCF();
+                    break;
+                case InstructionType.SCF:
+                    SCF();
+                    break;
+                case InstructionType.RRA:
+                    RRA();
+                    break;
                     // To do: add more cases for other instructions
             }
         }
@@ -291,6 +303,56 @@ namespace AGameBoyEmu.SoC
 
             F = flags.ToByte();
         }
-        
+
+        private void DEC(byte value)
+        {
+            int result = value - 1;
+
+            Flags flags = Flags.FromByte(F);
+            flags.zero = (byte)result == 0;
+            flags.subtract = true;
+            flags.halfCarry = (value & 0xF) - 1 < 0;
+
+            F = flags.ToByte();
+        }
+
+        // Toggle Carry Flag
+        private void CCF()
+        {
+            Flags flags = Flags.FromByte(F);
+            flags.carry = !flags.carry;
+            flags.subtract = false;
+            flags.halfCarry = false;
+
+            F = flags.ToByte();
+        }
+
+        // Set Carry Flag to True
+        private void SCF()
+        {
+            Flags flags = Flags.FromByte(F);
+            flags.carry = true;
+            flags.subtract = false;
+            flags.halfCarry = false;
+
+            F = flags.ToByte();
+        }
+
+        // Rotate right A register
+        private void RRA()
+        {
+            Flags flags = Flags.FromByte(F);
+            bool oldCarry = flags.carry;
+            bool newCarry = (A & 0x01) != 0;
+
+            A = (byte)((A >> 1) | (oldCarry ? 0x80 : 0x00));
+
+            flags.zero = false;         
+            flags.subtract = false;     
+            flags.halfCarry = false;    
+            flags.carry = newCarry;     
+
+            F = flags.ToByte();
+        }
     }
 }
