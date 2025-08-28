@@ -139,8 +139,20 @@ namespace AGameBoyEmu.SoC
                 case InstructionType.SCF:
                     SCF();
                     break;
+                case InstructionType.RLA:
+                    RLA();
+                    break;
                 case InstructionType.RRA:
                     RRA();
+                    break;
+                case InstructionType.RLCA:
+                    RLCA();
+                    break;
+                case InstructionType.RRCA:
+                    RRCA();
+                    break;
+                case InstructionType.CPL:
+                    CPL();
                     break;
                     // To do: add more cases for other instructions
             }
@@ -338,21 +350,101 @@ namespace AGameBoyEmu.SoC
             F = flags.ToByte();
         }
 
-        // Rotate right A register
-        private void RRA()
+        // Bit rotate left A register with carry
+        private void RLA()
         {
             Flags flags = Flags.FromByte(F);
-            bool oldCarry = flags.carry;
-            bool newCarry = (A & 0x01) != 0;
+            bool prevCarry = flags.carry;
+            bool newCarry = (A & 0x80) != 0;
 
-            A = (byte)((A >> 1) | (oldCarry ? 0x80 : 0x00));
+            A = (byte)(A << 1);
+            if (prevCarry)
+            {
+                A |= 0x01;
+            }
 
-            flags.zero = false;         
-            flags.subtract = false;     
-            flags.halfCarry = false;    
-            flags.carry = newCarry;     
+            flags.zero = false;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
 
             F = flags.ToByte();
         }
+
+        // Bit rotate right A register with carry
+        private void RRA()
+        {
+            Flags flags = Flags.FromByte(F);
+            bool prevCarry = flags.carry;
+            bool newCarry = (A & 0x01) != 0;
+
+            A = (byte)(A >> 1);
+            if (prevCarry)
+            {
+                A |= 0x80;
+            }
+
+            flags.zero = false;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+        }
+
+        // Bit rotate left A register without carry
+        private void RLCA()
+        {
+            Flags flags = Flags.FromByte(F);
+            bool newCarry = (A & 0x80) != 0;
+
+            A = (byte)(A << 1);
+            if (newCarry)
+            {
+                A |= 0x01;
+            }
+
+            flags.zero = false;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+        }
+
+        // Bit rotate right A register without carry
+        private void RRCA()
+        {
+            Flags flags = Flags.FromByte(F);
+            bool newCarry = (A & 0x01) != 0;
+
+            A = (byte)(A >> 1);
+            if (newCarry)
+            {
+                A |= 0x80;
+            }
+
+            flags.zero = false;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+        }
+
+        // Toggle A register bits
+        private void CPL()
+        {
+            Flags flags = Flags.FromByte(F);
+            A = (byte)~A;
+
+            flags.subtract = true;
+            flags.halfCarry = true;
+
+            F = flags.ToByte();
+        }
+        
+
+
     }
 }
