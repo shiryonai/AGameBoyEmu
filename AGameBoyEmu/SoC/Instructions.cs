@@ -25,6 +25,10 @@ namespace AGameBoyEmu.SoC
         RLCA,
         RRCA,
         CPL,
+        BIT,
+        SET,
+        RES,
+        SRL,
         
         // TODO: add more instruction types
     }
@@ -33,11 +37,20 @@ namespace AGameBoyEmu.SoC
     {
         public InstructionType Type;
         public Register8 Target;
+        public int Bit; // Bit stuff unsure yet
 
         public Instruction(InstructionType type, Register8 target)
         {
             Type = type;
             Target = target;
+            Bit = 0; 
+        }
+
+        public Instruction(InstructionType type, Register8 target, int bit)
+        {
+            Type = type;
+            Target = target;
+            Bit = bit;
         }
     }
 }

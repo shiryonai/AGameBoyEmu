@@ -154,6 +154,19 @@ namespace AGameBoyEmu.SoC
                 case InstructionType.CPL:
                     CPL();
                     break;
+                case InstructionType.BIT:
+                    byte bitVal = GetRegisterValue(instruction.Target);
+                    BIT(bitVal, instruction.Bit);
+                    break;
+                case InstructionType.SET:
+                    SET(instruction.Target, instruction.Bit);
+                    break;
+                case InstructionType.RES:
+                    RES(instruction.Target, instruction.Bit);
+                    break;
+                case InstructionType.SRL:
+                    SRL(instruction.Target);
+                    break;
                     // To do: add more cases for other instructions
             }
         }
@@ -443,8 +456,82 @@ namespace AGameBoyEmu.SoC
 
             F = flags.ToByte();
         }
-        
 
+        // Test bit b in register
+        private void BIT(byte value, int bit)
+        {
+            Flags flags = Flags.FromByte(F);
+            bool isBitSet = (value & (1 << bit)) != 0;
+
+            flags.zero = !isBitSet;
+            flags.subtract = false;
+            flags.halfCarry = true;
+
+            F = flags.ToByte();
+        }
+
+        // Set bit b in register
+        private void SET(Register8 reg, int bit)
+        {
+            byte value = GetRegisterValue(reg);
+            value = (byte)(value | (1 << bit));
+
+            switch (reg)
+            {
+                case Register8.A: A = value; break;
+                case Register8.B: B = value; break;
+                case Register8.C: C = value; break;
+                case Register8.D: D = value; break;
+                case Register8.E: E = value; break;
+                case Register8.H: H = value; break;
+                case Register8.L: L = value; break;
+            }
+        }
+
+        // Reset bit b in register
+        private void RES(Register8 reg, int bit)
+        {
+            byte value = GetRegisterValue(reg);
+            value = (byte)(value & ~(1 << bit)); // Clear the specified bit
+
+            switch (reg)
+            {
+                case Register8.A: A = value; break;
+                case Register8.B: B = value; break;
+                case Register8.C: C = value; break;
+                case Register8.D: D = value; break;
+                case Register8.E: E = value; break;
+                case Register8.H: H = value; break;
+                case Register8.L: L = value; break;
+            }
+        }
+        
+        private void SRL(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            Flags flags = Flags.FromByte(F);
+            bool newCarry = (value & 0x01) != 0;
+        
+            value = (byte)(value >> 1); // Logical shift right, bit 7 becomes 0
+        
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+        
+            F = flags.ToByte();
+        
+            switch (reg)
+            {
+                case Register8.A: A = value; break;
+                case Register8.B: B = value; break;
+                case Register8.C: C = value; break;
+                case Register8.D: D = value; break;
+                case Register8.E: E = value; break;
+                case Register8.H: H = value; break;
+                case Register8.L: L = value; break;
+            }
+        }
 
     }
 }
