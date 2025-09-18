@@ -29,6 +29,8 @@ namespace AGameBoyEmu.SoC
         SET,
         RES,
         SRL,
+        RL,
+        RR,
         
         // TODO: add more instruction types
     }

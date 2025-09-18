@@ -167,6 +167,12 @@ namespace AGameBoyEmu.SoC
                 case InstructionType.SRL:
                     SRL(instruction.Target);
                     break;
+                case InstructionType.RL:
+                    RL(instruction.Target);
+                    break;
+                case InstructionType.RR:
+                    RR(instruction.Target);
+                    break;
                     // To do: add more cases for other instructions
             }
         }
@@ -184,6 +190,20 @@ namespace AGameBoyEmu.SoC
                 Register8.L => L,
                 _ => 0
             };
+        }
+
+        private void SetRegisterValue(Register8 reg, byte value)
+        {
+            switch (reg)
+            {
+                case Register8.A: A = value; break;
+                case Register8.B: B = value; break;
+                case Register8.C: C = value; break;
+                case Register8.D: D = value; break;
+                case Register8.E: E = value; break;
+                case Register8.H: H = value; break;
+                case Register8.L: L = value; break;
+            }
         }
 
         private void ADD(byte value)
@@ -475,17 +495,7 @@ namespace AGameBoyEmu.SoC
         {
             byte value = GetRegisterValue(reg);
             value = (byte)(value | (1 << bit));
-
-            switch (reg)
-            {
-                case Register8.A: A = value; break;
-                case Register8.B: B = value; break;
-                case Register8.C: C = value; break;
-                case Register8.D: D = value; break;
-                case Register8.E: E = value; break;
-                case Register8.H: H = value; break;
-                case Register8.L: L = value; break;
-            }
+            SetRegisterValue(reg, value);
         }
 
         // Reset bit b in register
@@ -493,44 +503,68 @@ namespace AGameBoyEmu.SoC
         {
             byte value = GetRegisterValue(reg);
             value = (byte)(value & ~(1 << bit)); // Clear the specified bit
-
-            switch (reg)
-            {
-                case Register8.A: A = value; break;
-                case Register8.B: B = value; break;
-                case Register8.C: C = value; break;
-                case Register8.D: D = value; break;
-                case Register8.E: E = value; break;
-                case Register8.H: H = value; break;
-                case Register8.L: L = value; break;
-            }
+            SetRegisterValue(reg, value);
         }
-        
+
         private void SRL(Register8 reg)
         {
             byte value = GetRegisterValue(reg);
             Flags flags = Flags.FromByte(F);
             bool newCarry = (value & 0x01) != 0;
-        
+
             value = (byte)(value >> 1); // Logical shift right, bit 7 becomes 0
-        
+
             flags.zero = value == 0;
             flags.subtract = false;
             flags.halfCarry = false;
             flags.carry = newCarry;
-        
+
             F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
         
-            switch (reg)
+        private void RL(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            Flags flags = Flags.FromByte(F);
+            bool prevCarry = flags.carry;
+            bool newCarry = (value & 0x80) != 0;
+
+            value = (byte)(value << 1);
+            if (prevCarry)
             {
-                case Register8.A: A = value; break;
-                case Register8.B: B = value; break;
-                case Register8.C: C = value; break;
-                case Register8.D: D = value; break;
-                case Register8.E: E = value; break;
-                case Register8.H: H = value; break;
-                case Register8.L: L = value; break;
+                value |= 0x01; // Set bit 0 if previous carry was set
             }
+
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
+
+        private void RR(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            Flags flags = Flags.FromByte(F);
+            bool prevCarry = flags.carry;
+            bool newCarry = (value & 0x01) != 0;
+
+            value = (byte)(value >> 1);
+            if (prevCarry)
+            {
+                value |= 0x80; // Set bit 7 if previous carry was set
+            }
+
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
         }
 
     }
