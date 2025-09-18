@@ -31,8 +31,11 @@ namespace AGameBoyEmu.SoC
         SRL,
         RL,
         RR,
-        
-        // TODO: add more instruction types
+        RLC,
+        RRC,
+        SLA,
+        SRA,
+        SWAP
     }
 
     public struct Instruction

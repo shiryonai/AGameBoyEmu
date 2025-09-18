@@ -126,12 +126,10 @@ namespace AGameBoyEmu.SoC
                     CP(cpVal);
                     break;
                 case InstructionType.INC:
-                    byte incVal = GetRegisterValue(instruction.Target);
-                    INC(incVal);
+                    INC(instruction.Target);
                     break;
                 case InstructionType.DEC:
-                    byte decVal = GetRegisterValue(instruction.Target);
-                    DEC(decVal);
+                    DEC(instruction.Target);
                     break;
                 case InstructionType.CCF:
                     CCF();
@@ -173,7 +171,23 @@ namespace AGameBoyEmu.SoC
                 case InstructionType.RR:
                     RR(instruction.Target);
                     break;
-                    // To do: add more cases for other instructions
+                case InstructionType.RLC:
+                    RLC(instruction.Target);
+                    break;
+                case InstructionType.RRC:
+                    RRC(instruction.Target);
+                    break;
+                case InstructionType.SLA:
+                    SLA(instruction.Target);
+                    break;
+                case InstructionType.SRA:
+                    SRA(instruction.Target);
+                    break;
+                case InstructionType.SWAP:
+                    SWAP(instruction.Target);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown instruction: {instruction.Type}");
             }
         }
 
@@ -336,8 +350,9 @@ namespace AGameBoyEmu.SoC
         }
 
         // Increment
-        private void INC(byte value)
+        private void INC(Register8 reg)
         {
+            byte value = GetRegisterValue(reg);
             int result = value + 1;
 
             // Preserve the carry flag
@@ -347,10 +362,12 @@ namespace AGameBoyEmu.SoC
             flags.halfCarry = (value & 0xF) + 1 > 0xF;
 
             F = flags.ToByte();
+            SetRegisterValue(reg, (byte)result);
         }
 
-        private void DEC(byte value)
+        private void DEC(Register8 reg)
         {
+            byte value = GetRegisterValue(reg);
             int result = value - 1;
 
             Flags flags = Flags.FromByte(F);
@@ -359,6 +376,7 @@ namespace AGameBoyEmu.SoC
             flags.halfCarry = (value & 0xF) - 1 < 0;
 
             F = flags.ToByte();
+            SetRegisterValue(reg, (byte)result);
         }
 
         // Toggle Carry Flag
@@ -506,6 +524,7 @@ namespace AGameBoyEmu.SoC
             SetRegisterValue(reg, value);
         }
 
+        // Shift register right
         private void SRL(Register8 reg)
         {
             byte value = GetRegisterValue(reg);
@@ -522,7 +541,8 @@ namespace AGameBoyEmu.SoC
             F = flags.ToByte();
             SetRegisterValue(reg, value);
         }
-        
+
+        // Rotate register left through carry
         private void RL(Register8 reg)
         {
             byte value = GetRegisterValue(reg);
@@ -533,7 +553,7 @@ namespace AGameBoyEmu.SoC
             value = (byte)(value << 1);
             if (prevCarry)
             {
-                value |= 0x01; // Set bit 0 if previous carry was set
+                value |= 0x01;
             }
 
             flags.zero = value == 0;
@@ -545,6 +565,7 @@ namespace AGameBoyEmu.SoC
             SetRegisterValue(reg, value);
         }
 
+        // Rotate register right through carry
         private void RR(Register8 reg)
         {
             byte value = GetRegisterValue(reg);
@@ -555,7 +576,7 @@ namespace AGameBoyEmu.SoC
             value = (byte)(value >> 1);
             if (prevCarry)
             {
-                value |= 0x80; // Set bit 7 if previous carry was set
+                value |= 0x80;
             }
 
             flags.zero = value == 0;
@@ -567,5 +588,107 @@ namespace AGameBoyEmu.SoC
             SetRegisterValue(reg, value);
         }
 
+        // RL without carry
+        private void RLC(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            bool newCarry = (value & 0x80) != 0; // Save bit 7
+
+            value = (byte)(value << 1);
+            if (newCarry)
+            {
+                value |= 0x01;
+            }
+
+            Flags flags = Flags.FromByte(F);
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
+
+        // RR without carry
+        private void RRC(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            bool newCarry = (value & 0x01) != 0; // Save bit 0
+
+            value = (byte)(value >> 1);
+            if (newCarry)
+            {
+                value |= 0x80;
+            }
+
+            Flags flags = Flags.FromByte(F);
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
+
+        // Arithmetic shift register left
+        private void SLA(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            bool newCarry = (value & 0x80) != 0;
+
+            value = (byte)(value << 1);
+
+            Flags flags = Flags.FromByte(F);
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
+
+        // Arithmetic shift register right
+        private void SRA(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            bool newCarry = (value & 0x01) != 0;
+            bool msb = (value & 0x80) != 0; // Preserve most significant bit
+
+            value = (byte)(value >> 1);
+            if (msb)
+            {
+                value |= 0x80; // Restore most significant bit if it was set
+            }
+
+            Flags flags = Flags.FromByte(F);
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = newCarry;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
+
+        // Swap upper and lower nibbles of register
+        private void SWAP(Register8 reg)
+        {
+            byte value = GetRegisterValue(reg);
+            byte upper = (byte)((value & 0xF0) >> 4);
+            byte lower = (byte)((value & 0x0F) << 4);
+            value = (byte)(upper | lower);
+
+            Flags flags = new Flags();
+            flags.zero = value == 0;
+            flags.subtract = false;
+            flags.halfCarry = false;
+            flags.carry = false;
+
+            F = flags.ToByte();
+            SetRegisterValue(reg, value);
+        }
     }
 }
