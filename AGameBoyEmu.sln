@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AGameBoyEmu", "AGameBoyEmu\AGameBoyEmu.csproj", "{AD01E951-EC77-450F-AD0A-C064C61DF5F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AGameBoyEmu.Tests", "AGameBoyEmu.Tests\AGameBoyEmu.Tests.csproj", "{7BB54E75-0B35-48CA-8352-07B5D819ECC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{AD01E951-EC77-450F-AD0A-C064C61DF5F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD01E951-EC77-450F-AD0A-C064C61DF5F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD01E951-EC77-450F-AD0A-C064C61DF5F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BB54E75-0B35-48CA-8352-07B5D819ECC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BB54E75-0B35-48CA-8352-07B5D819ECC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BB54E75-0B35-48CA-8352-07B5D819ECC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BB54E75-0B35-48CA-8352-07B5D819ECC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
