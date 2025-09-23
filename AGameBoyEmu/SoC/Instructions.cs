@@ -2,7 +2,8 @@ namespace AGameBoyEmu.SoC
 {
     public enum Register8
     {
-        A, B, C, D, E, H, L
+        A, B, C, D, E, H, L,
+        BC, DE, HL, AF
     }
 
     public enum InstructionType

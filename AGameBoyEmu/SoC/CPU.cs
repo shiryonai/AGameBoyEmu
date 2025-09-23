@@ -94,7 +94,7 @@ namespace AGameBoyEmu.SoC
                     ADD(addVal);
                     break;
                 case InstructionType.ADDHL:
-                    ushort addhlVal = GetRegisterValue(instruction.Target);
+                    ushort addhlVal = GetRegisterValue16(instruction.Target);
                     ADDHL(addhlVal);
                     break;
                 case InstructionType.ADC:
@@ -206,6 +206,19 @@ namespace AGameBoyEmu.SoC
             };
         }
 
+        private ushort GetRegisterValue16(Register8 reg)
+        {
+            return reg switch
+            {
+                Register8.BC => BC,
+                Register8.DE => DE,
+                Register8.HL => HL,
+                Register8.AF => AF,
+                _ => 0
+            };
+        }
+
+
         private void SetRegisterValue(Register8 reg, byte value)
         {
             switch (reg)
@@ -253,7 +266,9 @@ namespace AGameBoyEmu.SoC
         // Add with Carry
         private void ADC(byte value)
         {
-            int result = A + value + (F & 0x10); // Add carry flag if set
+            // Add carry flag if set
+            int carry = (F & 0x10) != 0 ? 1 : 0;
+            int result = A + value + carry;
 
             Flags flags = new Flags();
             flags.zero = (byte)result == 0;
